@@ -325,6 +325,21 @@ tr:hover td { background: var(--neutral-50); }
 .fade-in { animation: fadeIn .3s ease; }
 .slide-up { animation: slideUp .35s ease; }
 
+/* ===== DETAIL WAWANCARA MODAL ===== */
+.hasil-row:hover td { background: var(--neutral-100); }
+.hasil-row:hover .kandidat-name { color: var(--accent); }
+.detail-q-card {
+  background: var(--neutral-50); border: 1px solid var(--neutral-200);
+  border-radius: var(--radius-sm); padding: 1rem; margin-bottom: .75rem;
+}
+.detail-q-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: .5rem; margin-bottom: .5rem; }
+.detail-q-card-q { font-size: .9rem; font-weight: 600; color: var(--neutral-800); flex: 1; }
+.detail-q-card-score { font-size: 1rem; font-weight: 700; color: var(--primary); background: var(--white); border: 1px solid var(--neutral-200); padding: .2rem .5rem; border-radius: var(--radius-sm); white-space: nowrap; }
+.detail-q-card-note { font-size: .85rem; color: var(--neutral-600); background: var(--white); padding: .5rem .75rem; border-radius: var(--radius-sm); border: 1px solid var(--neutral-200); margin-top: .5rem; font-style: italic; }
+.detail-modal-info { background: var(--neutral-50); padding: 1rem; border-radius: var(--radius-lg); margin-bottom: 1.5rem; border: 1px solid var(--neutral-200); display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: .75rem; }
+.detail-modal-info-item label { display: block; font-size: .72rem; color: var(--neutral-500); text-transform: uppercase; letter-spacing: .02em; margin-bottom: .15rem; }
+.detail-modal-info-item span { font-weight: 600; font-size: .9rem; color: var(--neutral-800); }
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .app-header { padding: 0 1rem; }

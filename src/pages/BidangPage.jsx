@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useAdmin } from '../contexts/AdminContext'
 import { getBidangById, getKandidatByBidang, getPertanyaanGlobal, getPertanyaanByBidang, createKandidat, deleteKandidat, createPertanyaanBidang, deletePertanyaan, updatePertanyaan, getPenilaianByKandidat, hitungRataRata, getKategori } from '../services/database'
 import { exportToCSV, exportToExcel } from '../services/exportService'
@@ -13,6 +13,7 @@ import LoadingSpinner from '../components/LoadingSpinner'
 
 export default function BidangPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const { isAdmin } = useAdmin()
   const [bidang, setBidang] = useState(null)
   const [kandidatList, setKandidatList] = useState([])
@@ -35,6 +36,7 @@ export default function BidangPage() {
   const [saving, setSaving] = useState(false)
   const [exporting, setExporting] = useState('')
   const [toast, setToast] = useState(null)
+  const [showDetailHasil, setShowDetailHasil] = useState(null)
 
   const showToast = (msg, type = 'success') => { setToast({ msg, type }); setTimeout(() => setToast(null), 3000) }
 
@@ -50,7 +52,7 @@ export default function BidangPage() {
       for (const kand of k) {
         const penilaian = await getPenilaianByKandidat(kand.id)
         const rata = hitungRataRata(penilaian)
-        hasil.push({ ...kand, rataRata: rata, kategori: getKategori(rata) })
+        hasil.push({ ...kand, rataRata: rata, kategori: getKategori(rata), penilaian })
       }
       setHasilList(hasil)
     } catch (err) { console.error(err) }
@@ -217,7 +219,7 @@ export default function BidangPage() {
             </div>
           </div>
           <FilterBar active={filter} onChange={setFilter} />
-          <HasilTable hasilList={filteredHasil} />
+          <HasilTable hasilList={filteredHasil} onRowClick={(h) => setShowDetailHasil(h)} />
         </div>
       )}
 
@@ -277,6 +279,53 @@ export default function BidangPage() {
       {/* Confirm Delete Pertanyaan */}
       <ConfirmDialog isOpen={!!showDeletePertanyaan} onClose={() => setShowDeletePertanyaan(null)} onConfirm={handleDeletePertanyaan}
         title="Hapus pertanyaan ini?" message="Penilaian terkait pertanyaan ini juga akan terhapus." loading={saving} />
+
+      {/* Modal Detail Hasil */}
+      {showDetailHasil && (
+        <Modal isOpen={true} onClose={() => setShowDetailHasil(null)} title="Detail Hasil Wawancara">
+          <div className="modal-body">
+            <div className="detail-modal-info">
+              <div className="detail-modal-info-item"><label>Nama</label><span>{showDetailHasil.nama}</span></div>
+              <div className="detail-modal-info-item"><label>NIM</label><span>{showDetailHasil.nim}</span></div>
+              <div className="detail-modal-info-item"><label>Pilihan</label><span>Pilihan {showDetailHasil.pilihan}</span></div>
+              <div className="detail-modal-info-item"><label>Bidang</label><span>{bidang.nama}</span></div>
+              <div className="detail-modal-info-item"><label>Rata-rata</label><span style={{color: 'var(--primary)'}}>{showDetailHasil.rataRata ?? '-'}</span></div>
+              <div className="detail-modal-info-item"><label>Kategori</label><span><span className={`badge ${showDetailHasil.kategori === 'Bagus' ? 'badge-success' : showDetailHasil.kategori === 'Lumayan' ? 'badge-warning' : showDetailHasil.kategori === 'Cadangan' ? 'badge-danger' : 'badge-neutral'}`}>{showDetailHasil.kategori}</span></span></div>
+              <div className="detail-modal-info-item"><label>Status</label><span><span className={`badge ${showDetailHasil.status === 'Selesai' ? 'badge-success' : showDetailHasil.status === 'Sedang Diproses' ? 'badge-warning' : 'badge-neutral'}`}>{showDetailHasil.status}</span></span></div>
+            </div>
+
+            <h4 style={{ marginBottom: '1rem', color: 'var(--neutral-800)' }}>Detail Pertanyaan & Penilaian</h4>
+            
+            <div className="pertanyaan-list">
+              {[...globalQ, ...bidangQ].map((p, i) => {
+                const nilai = showDetailHasil.penilaian?.find(n => n.pertanyaan_id === p.id)
+                return (
+                  <div key={p.id} className="detail-q-card">
+                    <div className="detail-q-card-header">
+                      <div className="detail-q-card-q">
+                        <span style={{color: 'var(--neutral-400)', marginRight: '.4rem'}}>{i + 1}.</span> 
+                        {p.teks}
+                        <span className={`badge ${p.scope === 'global' ? 'badge-global' : 'badge-bidang'}`} style={{marginLeft: '.5rem', fontSize: '.65rem'}}>{p.scope === 'global' ? 'Global' : 'Khusus'}</span>
+                      </div>
+                      <div className="detail-q-card-score">
+                        {nilai?.skor ? `⭐ ${nilai.skor}` : 'Belum dinilai'}
+                      </div>
+                    </div>
+                    <div className="detail-q-card-note">
+                      <strong style={{fontSize: '0.75rem', textTransform: 'uppercase', opacity: 0.7, display: 'block', marginBottom: '0.2rem'}}>Catatan</strong> 
+                      {nilai?.catatan ? nilai.catatan : '-'}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-outline" onClick={() => setShowDetailHasil(null)}>Tutup</button>
+            <button type="button" className="btn btn-primary" onClick={() => navigate(`/bidang/${id}/wawancara/${showDetailHasil.id}`)}>✏️ Edit Wawancara</button>
+          </div>
+        </Modal>
+      )}
 
       {/* Toast */}
       {toast && (

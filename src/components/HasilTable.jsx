@@ -11,7 +11,7 @@ const statusBadge = {
   'Selesai': 'badge-success',
 }
 
-export default function HasilTable({ hasilList }) {
+export default function HasilTable({ hasilList, onRowClick }) {
   if (hasilList.length === 0) {
     return <div className="empty-state"><div className="empty-state-icon">📊</div><p>Belum ada hasil wawancara.</p></div>
   }
@@ -22,9 +22,9 @@ export default function HasilTable({ hasilList }) {
         <thead><tr><th>No</th><th>Nama</th><th>NIM</th><th>Pilihan</th><th>Rata-rata</th><th>Kategori</th><th>Status</th></tr></thead>
         <tbody>
           {hasilList.map((h, i) => (
-            <tr key={h.id}>
+            <tr key={h.id} className="hasil-row" onClick={() => onRowClick && onRowClick(h)} style={{ cursor: onRowClick ? 'pointer' : 'default' }}>
               <td>{i + 1}</td>
-              <td style={{ fontWeight: 600 }}>{h.nama}</td>
+              <td className="kandidat-name" style={{ fontWeight: 600 }}>{h.nama}</td>
               <td>{h.nim}</td>
               <td>{h.pilihan}</td>
               <td style={{ fontWeight: 700, color: 'var(--primary)' }}>{h.rataRata ?? '-'}</td>
